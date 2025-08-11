@@ -1,0 +1,8 @@
+/home/Bara/led-control-service/build/CMakeFiles/led-service.dir
+/home/Bara/led-control-service/build/CMakeFiles/ledctl.dir
+/home/Bara/led-control-service/build/CMakeFiles/edit_cache.dir
+/home/Bara/led-control-service/build/CMakeFiles/rebuild_cache.dir
+/home/Bara/led-control-service/build/CMakeFiles/list_install_components.dir
+/home/Bara/led-control-service/build/CMakeFiles/install.dir
+/home/Bara/led-control-service/build/CMakeFiles/install/local.dir
+/home/Bara/led-control-service/build/CMakeFiles/install/strip.dir

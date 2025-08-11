@@ -1,0 +1,1 @@
+/usr/sbin/c++ -Wl,--dependency-file=CMakeFiles/ledctl.dir/link.d CMakeFiles/ledctl.dir/src/client.cpp.o -o ledctl  -lpthread
