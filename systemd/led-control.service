@@ -1,0 +1,11 @@
+[Unit]
+Description=LED Control Service
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/led-service
+Restart=always
+User=root
+
+[Install]
+WantedBy=multi-user.target

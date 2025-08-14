@@ -1,0 +1,1 @@
+/usr/sbin/c++ -Wl,--dependency-file=CMakeFiles/led-service.dir/link.d "CMakeFiles/led-service.dir/src/service.cpp.o" "CMakeFiles/led-service.dir/src/gpio_manager.cpp.o" "CMakeFiles/led-service.dir/src/parser.cpp.o" -o led-service  -lgpiodcxx -lgpiod -lpthread
