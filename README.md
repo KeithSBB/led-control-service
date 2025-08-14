@@ -2,14 +2,13 @@
 
 This repository contains a systemd service for controlling LEDs on Raspberry Pi 4B GPIO chips using libgpiod C++ bindings. The service is designed and coded based on the specifications in requirements.md.
 
-This project was developed, written, and troubleshooted using Grok 4 by xAI, based on the requirements.md file.
+This project was developed, written, and partially troubleshooted using Grok 4 by xAI, based on the requirements.md file.  Grok 4 failed to fix problems so 
+a human performed the final fixes.
 
 ## Installation
 1. Clone the repo: `git clone https://github.com/KeithSBB/led-control-service.git`
-2. Create build directory: `cd led-control-service; mkdir build; cd build`
-3. Run CMake: `cmake ..`
-4. Build: `make`
-5. Install: `sudo make install`
+2. cd ~/led-control-service
+3. run ./install.sh
 
 This installs:
 - Binaries: /usr/bin/led-service, /usr/bin/ledctl
