@@ -192,4 +192,9 @@ CMakeFiles/led-service.dir/src/gpio_manager.cpp.o: \
  /usr/include/c++/15/bits/unique_lock.h /usr/include/c++/15/fstream \
  /usr/include/c++/15/aarch64-redhat-linux/bits/basic_file.h \
  /usr/include/c++/15/aarch64-redhat-linux/bits/c++io.h \
- /usr/include/c++/15/bits/fstream.tcc
+ /usr/include/c++/15/bits/fstream.tcc /usr/include/c++/15/algorithm \
+ /usr/include/c++/15/bits/stl_algo.h \
+ /usr/include/c++/15/bits/algorithmfwd.h \
+ /usr/include/c++/15/bits/stl_heap.h \
+ /usr/include/c++/15/bits/uniform_int_dist.h \
+ /usr/include/c++/15/pstl/glue_algorithm_defs.h

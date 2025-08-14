@@ -27,7 +27,7 @@ ParseResult Parser::parse() {
     }
 
     // Handle simple on/off as special
-    if (command.substr(pos, 2) == "on ") {
+    if (command.substr(pos, 3) == "on ") {
         pos += 3;
         auto par = std::make_shared<ParallelNode>();
         while (pos < command.size()) {
@@ -46,7 +46,7 @@ ParseResult Parser::parse() {
         return {seq, 1};
     }
 
-    if (command.substr(pos, 3) == "off ") {
+    if (command.substr(pos, 4) == "off ") {
         pos += 4;
         if (pos >= command.size()) {
             auto seq = std::make_shared<SequenceNode>();
@@ -82,34 +82,56 @@ std::shared_ptr<SequenceNode> Parser::parse_sequence() {
     auto seq = std::make_shared<SequenceNode>();
     while (pos < command.size()) {
         skip_whitespace();
-        if (command[pos] == ',' || command[pos] == ')') break;
         auto step = parse_step();
         seq->steps.push_back(step);
+        skip_whitespace();
+        size_t save_pos = pos;
+        if (pos < command.size() && command[pos] == ',') {
+            ++pos;
+            skip_whitespace();
+            std::string peek = next_token();
+            if (peek == "loop") {
+                pos = save_pos;
+                break;
+            }
+            pos = save_pos + 1; // consume the ,
+        } else {
+            break;
+        }
     }
     return seq;
 }
 
 std::shared_ptr<Node> Parser::parse_step() {
     skip_whitespace();
+    if (pos >= command.size()) throw std::runtime_error("Unexpected end of command");
     if (command[pos] == '(') {
         ++pos;
         auto par = std::make_shared<ParallelNode>();
-        while (true) {
+        bool sub_first = true;
+        while (pos < command.size()) {
             skip_whitespace();
             if (command[pos] == ')') {
                 ++pos;
                 break;
             }
+            if (!sub_first) {
+                if (command[pos] == ',') {
+                    ++pos;
+                    skip_whitespace();
+                } else {
+                    throw std::runtime_error("Parse error: expected , or )");
+                }
+            }
+            sub_first = false;
             auto sub = parse_step();
             par->subs.push_back(sub);
-            skip_whitespace();
-            if (command[pos] == ',') ++pos;
-            else if (command[pos] != ')') throw std::runtime_error("Parse error: expected , or )");
         }
         return par;
     }
 
     std::string tok = next_token();
+    if (tok.empty()) throw std::runtime_error("Parse error: empty token");
     if (tok == "OFF") {
         double d = parse_dwell();
         auto off = std::make_shared<OffNode>();
@@ -132,6 +154,7 @@ std::shared_ptr<Node> Parser::parse_step() {
     } // ignore ON
     double d;
     if (next == "inf") d = -1;
+    else if (next.empty()) throw std::runtime_error("Missing dwell time");
     else d = std::stod(next);
     auto act = std::make_shared<LedActionNode>();
     act->chip = chip;
@@ -141,12 +164,15 @@ std::shared_ptr<Node> Parser::parse_step() {
 }
 
 double Parser::parse_dwell() {
+    skip_whitespace();
     std::string tok = next_token();
     if (tok == "inf") return -1;
+    if (tok.empty()) throw std::runtime_error("Missing dwell time");
     return std::stod(tok);
 }
 
 std::pair<std::string, std::string> Parser::parse_led() {
+    skip_whitespace();
     std::string tok = next_token();
     size_t colon = tok.find(':');
     if (colon == std::string::npos) return {"gpiochip0", tok};
@@ -155,10 +181,13 @@ std::pair<std::string, std::string> Parser::parse_led() {
 
 int Parser::parse_loop() {
     skip_whitespace();
-    if (pos >= command.size() || command.substr(pos, 5) != ", loop") return 1;
-    pos += 6;
+    if (pos >= command.size() || command[pos] != ',') return 1;
+    ++pos;
     skip_whitespace();
     std::string tok = next_token();
+    if (tok != "loop") throw std::runtime_error("Expected 'loop'");
+    skip_whitespace();
+    tok = next_token();
     if (tok == "forever") return -1;
     return std::stoi(tok);
 }

@@ -4,6 +4,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <vector>
+#include <algorithm>
 
 GPIOManager::GPIOManager() {
     load_configs();
@@ -33,21 +34,24 @@ void GPIOManager::load_configs() {
                     std::cerr << "Failed to open chip /dev/" << current_chip << std::endl;
                     continue;
                 }
-                chips[current_chip] = std::move(chip);
+                chips.emplace(current_chip, std::move(chip));
 
-                auto builder = chips[current_chip].prepare_request().set_consumer("led-control");
-                for (unsigned offset : chip_offsets[current_chip]) {
+                gpiod::request_builder builder = chips.at(current_chip).prepare_request();
+                builder.set_consumer("led-control");
+                std::vector<unsigned> sorted_offsets = chip_offsets[current_chip];
+                std::sort(sorted_offsets.begin(), sorted_offsets.end());
+                for (unsigned offset : sorted_offsets) {
                     gpiod::line_settings settings;
                     settings.set_direction(gpiod::line::direction::OUTPUT);
                     settings.set_output_value(gpiod::line::value::INACTIVE);
                     builder.add_line_settings(offset, settings);
                 }
-                auto req = builder.do_request();
+                gpiod::line_request req = builder.do_request();
                 if (!req) {
                     std::cerr << "Failed to request lines for " << current_chip << std::endl;
                     continue;
                 }
-                requests[current_chip] = std::move(req);
+                requests.emplace(current_chip, std::move(req));
             }
 
             current_chip = line.substr(1, line.find(']') - 1);
@@ -80,25 +84,29 @@ void GPIOManager::load_configs() {
             std::cerr << "Failed to open chip /dev/" << current_chip << std::endl;
             return;
         }
-        chips[current_chip] = std::move(chip);
+        chips.emplace(current_chip, std::move(chip));
 
-        auto builder = chips[current_chip].prepare_request().set_consumer("led-control");
-        for (unsigned offset : chip_offsets[current_chip]) {
+        gpiod::request_builder builder = chips.at(current_chip).prepare_request();
+        builder.set_consumer("led-control");
+        std::vector<unsigned> sorted_offsets = chip_offsets[current_chip];
+        std::sort(sorted_offsets.begin(), sorted_offsets.end());
+        for (unsigned offset : sorted_offsets) {
             gpiod::line_settings settings;
             settings.set_direction(gpiod::line::direction::OUTPUT);
             settings.set_output_value(gpiod::line::value::INACTIVE);
             builder.add_line_settings(offset, settings);
         }
-        auto req = builder.do_request();
+        gpiod::line_request req = builder.do_request();
         if (!req) {
             std::cerr << "Failed to request lines for " << current_chip << std::endl;
             return;
         }
-        requests[current_chip] = std::move(req);
+        requests.emplace(current_chip, std::move(req));
     }
 }
 
 void GPIOManager::set_led(const std::string& chip_name, const std::string& led_name, int value) {
+    std::cerr << "Entering GPIOManager::set_led "<< std::endl;
     std::lock_guard<std::mutex> lock(gpio_mutex);
     auto it_offsets = led_offsets.find(chip_name);
     if (it_offsets == led_offsets.end()) return;
@@ -110,18 +118,29 @@ void GPIOManager::set_led(const std::string& chip_name, const std::string& led_n
     if (it_req == requests.end()) return;
 
     gpiod::line::value val = value ? gpiod::line::value::ACTIVE : gpiod::line::value::INACTIVE;
-    it_req->second.set_value(offset, val);
+    try {
+        it_req->second.set_value(offset, val);
+    } catch (const std::exception& e) {
+        std::cerr << "Error setting LED " << led_name << " on " << chip_name << ": " << e.what() << std::endl;
+    }
+    std::cerr << "leaving GPIOManager::set_led "<< std::endl;
+
 }
 
 void GPIOManager::set_all_off() {
     std::lock_guard<std::mutex> lock(gpio_mutex);
-    for (const auto& chip_pair : requests) {
+    for (auto& chip_pair : requests) {
         std::string chip_name = chip_pair.first;
         auto& req = chip_pair.second;
-        std::map<unsigned, gpiod::line::value> vals;
+        gpiod::line::value_mappings vals;
         for (const auto& offset_pair : led_offsets[chip_name]) {
-            vals[offset_pair.second] = gpiod::line::value::INACTIVE;
+            vals.emplace_back(offset_pair.second, gpiod::line::value::INACTIVE);
         }
-        req.set_values(vals);
+        std::sort(vals.begin(), vals.end());
+        try {
+            req.set_values(vals);
+        } catch (const std::exception& e) {
+            std::cerr << "Error setting all off on " << chip_name << ": " << e.what() << std::endl;
+        }
     }
 }

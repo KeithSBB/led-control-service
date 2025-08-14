@@ -1,0 +1,4 @@
+/usr/bin/led-service
+/usr/bin/ledctl
+/etc/led-control/leds.ini
+/usr/lib/systemd/system/led-control.service
