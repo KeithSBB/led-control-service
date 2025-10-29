@@ -29,7 +29,7 @@ green=24
 blue=25
 
 ## Usage
-Use `ledctl <command>` where <command> is the sequence string.
+Use `ledctl <command>` where `<command>` is the sequence string.
 
 Examples:
 - Turn on red permanently: `ledctl "red inf"`
