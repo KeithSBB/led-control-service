@@ -37,6 +37,7 @@ Examples:
 - Turn off all: `ledctl "off"`
 - Sequence: `ledctl "red 1.2, (fault 1.3, blue 2), yellow 3, OFF 4, loop forever"`
 - Blink red: `ledctl "red 0.5, OFF 0.5, loop forever"`
+- Run sequebce five times: `ledctl "red 1.5, green 1.5, blue 1.5, loop 5"`
 
 Note: Chip prefix optional (default gpiochip0), ON optional.
 
