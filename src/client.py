@@ -1,6 +1,6 @@
 import sys
 import socket
-import getaddrinfo  # Wait, no: it's socket.getaddrinfo
+#import getaddrinfo  # Wait, no: it's socket.getaddrinfo
 
 def main():
     if len(sys.argv) < 4:
