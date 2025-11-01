@@ -5,6 +5,7 @@
 #include <netdb.h>       // Added for getaddrinfo
 #include <unistd.h>
 #include <string>
+#include <cstring>
 
 int main(int argc, char** argv) {
     if (argc < 4) {
