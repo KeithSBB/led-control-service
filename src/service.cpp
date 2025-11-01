@@ -8,6 +8,7 @@
 #include <atomic>
 #include <thread>
 #include <memory>
+#include <cstring>
 
 int main() {
     GPIOManager gpio;
