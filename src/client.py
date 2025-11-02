@@ -4,7 +4,7 @@ import socket
 
 def main():
     if len(sys.argv) < 4:
-        print("Usage: ledctl <hostname> <port> <command...>", file=sys.stderr)
+        print("Usage: python client.py <hostname> <port> <command...>", file=sys.stderr)
         sys.exit(1)
 
     hostname = sys.argv[1]
